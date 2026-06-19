@@ -1,0 +1,33 @@
+# Root workspace manifest for the AI-Engine Soroban monorepo.
+[workspace]
+resolver = "2"
+members = [
+    "contracts/shared",
+    "contracts/treasury",
+    "contracts/payment-router",
+    "crates/agent-sdk",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/OrbitFlow-AI/AI-Engine"
+
+[workspace.dependencies]
+soroban-sdk = "22.0.0"
+ai-engine-shared = { path = "contracts/shared" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true
