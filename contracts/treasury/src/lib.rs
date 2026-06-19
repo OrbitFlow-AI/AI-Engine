@@ -6,4 +6,7 @@ mod storage;
 mod allocation;
 mod errors;
 
+#[cfg(test)]
+mod test;
+
 pub use contract::TreasuryContract;
