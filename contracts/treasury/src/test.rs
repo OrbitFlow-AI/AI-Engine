@@ -1,3 +1,4 @@
+// Treasury contract unit tests — initialization and deposit flows.
 #[cfg(test)]
 mod treasury_tests {
     use super::*;

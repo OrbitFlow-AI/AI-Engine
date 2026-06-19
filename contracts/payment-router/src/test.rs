@@ -1,3 +1,4 @@
+// Payment router unit tests — initialization and payment validation.
 #[cfg(test)]
 mod router_tests {
     use soroban_sdk::{testutils::Address as _, Address, Env, BytesN, String};
