@@ -55,39 +55,38 @@ Without this infrastructure, agent systems either pre-pay vendors off-chain (los
 
 | Feature | Description | Acceptance Criterion |
 |---------|-------------|---------------------|
-| **Treasury Contract** | On-chain stablecoin vault with admin controls | Admin can deposit/withdraw; balance queryable; emits deposit events |
-| **Agent Budget Allocation** | Assign spending limits per agent address | Admin allocates budget; agent balance decrements on spend; rejects over-budget |
-| **Payment Router** | Route micropayments to vendor destinations | Agent initiates payment; router validates budget + conditions; settles on-chain |
-| **Condition-Based Path Payments** | Pay only when resource delivery condition met | Router holds escrow; releases on condition proof or timeout refund |
-| **Smart Account Kit Hooks** | Programmatic agent wallet creation and signing | SDK exposes `createAgentWallet()` and `signPayment()` via Smart Account Kit |
-| **Multi-Agent Budget Management** | Cohort budgets, sub-allocation, revocation | Admin can set cohort cap; revoke agent budget; reclaim unspent funds |
-| **TypeScript Agent SDK** | High-level client for agent runtime integration | `TreasuryClient`, `RouterClient`, `BudgetManager` exported from `@ai-engine/sdk` |
-| **Rust Agent SDK** | Native client for Rust-based agent systems | `AgentClient` trait with allocate, pay, balance query methods |
-| **Spending Policies** | Rate limits, allowlists, max single payment | Router rejects payments exceeding per-tx or daily limits |
-| **Observability Stubs** | Logging and metrics hooks for production | SDK emits structured payment events; metrics counters for spend/volume |
-| **CI/CD Pipeline** | Automated contract build, test, deploy skeleton | GitHub Actions runs `cargo test` and SDK typecheck on PR |
-| **Security Patterns** | Role-based access, pause, reentrancy guards | Only admin can allocate; emergency pause halts router; no reentrant spend |
+| **Treasury Contract** | Holds stablecoin deposits and tracks total/allocated balances | Admin can deposit; `allocated + unallocated = total`; events emitted on deposit |
+| **Agent Budget Allocation** | Assign spend caps to agent addresses or smart accounts | Allocation reduces unallocated balance; agent spend cannot exceed allocation |
+| **Micropayment Router** | Route stablecoin payments to vendor addresses with memos | Router debits agent budget and transfers to destination atomically |
+| **Condition-Based Path Payment** | Pay via Stellar path when delivery conditions are met | Payment aborts if min-received or destination asset condition fails |
+| **Smart Account Kit Hooks** | Create/link passkey smart wallets for agents | SDK exposes `createAgentWallet` and `linkTreasury` with policy metadata |
+| **Multi-Agent Budget Pools** | Shared pool with per-agent sub-limits | Pool total enforced; individual agents capped independently |
+| **Spend Policies** | Rate limits, allowlists, max single payment | Policy violation returns structured error without state change |
+| **Audit Events** | On-chain events for allocate, pay, revoke, pause | Indexer can reconstruct agent spend history from events |
+| **SDK (TypeScript)** | Agent runtime integration for Node/Bun | `allocateBudget`, `requestPayment`, `getBalance` methods with typed errors |
+| **SDK (Rust)** | Native agent or contract-side helpers | Mirrors TS API; compiles in workspace without network fetch |
+| **Observability Stubs** | Metrics/logging interfaces for operators | SDK emits structured log events; metrics counters defined |
+| **CI/CD Skeleton** | Build, lint, test pipelines | GitHub Actions runs contract build and SDK typecheck on PR |
 
 ## 5. Technical Constraints
 
-| Constraint | Detail |
-|------------|--------|
-| **Blockchain** | Stellar testnet/mainnet; Soroban smart contracts (Rust `#![no_std]`) |
-| **Token Standard** | Stellar classic assets (USDC) via Soroban token interface |
-| **Wallet Integration** | Stellar Smart Account Kit for passkey-based programmatic signing |
-| **Path Payments** | Stellar DEX path payment strict send/receive for stablecoin routing |
-| **Contract Size** | Soroban WASM size limits; shared types extracted to `contracts/shared` crate |
-| **Agent Runtime** | TypeScript SDK targets Node.js 18+; Rust SDK targets stable toolchain |
-| **Deployment** | Render-compatible CI/CD skeleton; ephemeral filesystem (no local state) |
-| **No Dependency Install** | Scaffold phase writes code/config only; CI validates on push |
+| Constraint | Implication |
+|------------|-------------|
+| **Soroban smart contracts (Rust)** | All on-chain logic in `no_std` Rust; WASM size and compute budget limits apply |
+| **Stellar path payments** | Routing uses Stellar liquidity paths; slippage and asset trustlines must be configured |
+| **Smart Account Kit** | Programmatic signing requires passkey/smart-account integration; session keys scoped by policy |
+| **Stablecoin micropayments** | Primary asset USDC (or testnet equivalent); amounts in stroops/minimum units |
+| **No dependency install in scaffold** | Cargo/npm manifests present; consumers run install locally |
+| **Render deployment** | HTTP services bind `0.0.0.0:$PORT`; ephemeral filesystem — state on-chain only |
+| **Multi-agent concurrency** | Contract design must handle concurrent spend attempts without overdraft |
 
 ## 6. Open Questions
 
-| ID | Question | Impact | Proposed Default |
-|----|----------|--------|------------------|
-| OQ1 | Which stablecoin(s) to support at launch? | Token contract addresses | USDC on Stellar testnet |
-| OQ2 | How are delivery conditions verified on-chain? | Path payment escrow release | Off-chain oracle attestation via admin/multisig in v1 |
-| OQ3 | Smart Account Kit session key TTL? | Agent autonomy vs. security | 24h delegated session keys with spend cap |
-| OQ4 | Cohort budget nesting depth? | Contract storage complexity | Flat: treasury → agent (no nested cohorts in v1) |
-| OQ5 | Minimum micropayment amount? | Soroban fee economics | 0.01 USDC floor to cover network fees |
-| OQ6 | Formal audit timeline? | Mainnet readiness | Post-scaffold; testnet only until audit complete |
+| ID | Question | Owner | Notes |
+|----|----------|-------|-------|
+| OQ1 | Which testnet stablecoin asset codes will be canonical for demos? | Platform | USDC on testnet vs custom soroban token |
+| OQ2 | Should condition fulfillment be on-chain oracle attestation or off-chain callback? | Architecture | Affects router contract interface |
+| OQ3 | Smart Account Kit session key TTL defaults for agent workloads? | Security | Balance autonomy vs revocation speed |
+| OQ4 | Required vendor allowlist vs open payments? | Product | FinOps may require allowlist in enterprise |
+| OQ5 | Formal audit timeline before mainnet? | Leadership | Out of scaffold scope but affects launch |
+| OQ6 | Indexer choice for audit event ingestion (Mercury, custom)? | Infra | SDK stubs only in v1 scaffold |
