@@ -1,17 +1,14 @@
 # AI Agent Treasury & Micropayment Router — Product Requirements Document
 
-> Soroban/Stellar smart contract framework for autonomous multi-agent LLM micropayments.
-
 ## 1. Problem Statement
 
-Autonomous AI agents increasingly need to pay for external resources — LLM inference, data APIs, compute, and tool access — without a human in the loop for every transaction. Today, most agent systems rely on centralized billing accounts, shared API keys, or manual wallet signing, which creates single points of failure, poor budget isolation between agents, and no on-chain audit trail.
+Autonomous AI agents increasingly orchestrate multi-step workflows that require paid access to LLM APIs, data providers, and compute services. Today, each payment typically requires human wallet signing, breaking agent autonomy and making sub-cent micropayments economically impractical.
 
-Multi-agent LLM systems need:
+Teams building multi-agent LLM systems need a programmatic treasury layer on Stellar/Soroban that:
 
-- **Programmatic spending authority** — agents must pay autonomously within defined limits.
-- **Per-agent budget isolation** — one agent overspending must not drain the entire treasury.
-- **Micropayment efficiency** — sub-dollar stablecoin payments with minimal friction.
-- **Conditional settlement** — pay only when delivery conditions are met (path payments).
-- **Passkey-based smart wallets** — integrate with Stellar Smart Account Kit for secure, recoverable agent identities.
+- Allocates stablecoin budgets per agent or agent cohort
+- Routes micropayments via condition-based path payments
+- Integrates with passkey-based smart wallets (Stellar Smart Account Kit) for programmatic authorization
+- Enforces spend policies without manual intervention per transaction
 
-The AI-Engine project provides a Soroban smart contract framework and TypeScript/Rust SDKs that enable agent treasuries, condition-based path-payment routing, and Smart Account Kit integration for production multi-agent systems on Stellar.
+Without this infrastructure, agent systems either pre-pay vendors off-chain (losing on-chain auditability) or centralize funds in a custodial service (increasing trust and compliance risk).
