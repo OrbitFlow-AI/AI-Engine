@@ -1,6 +1,4 @@
-# Deployment guide for AI-Engine on Stellar testnet and Render.
 # AI Agent Treasury & Micropayment Router — Deployment Guide
-
 ## Prerequisites
 
 - Rust stable with `wasm32-unknown-unknown` target

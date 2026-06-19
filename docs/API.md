@@ -1,6 +1,4 @@
-# API reference stubs for AI-Engine SDK and contracts.
 # AI-Engine API Reference
-
 ## Treasury Contract
 
 | Method | Params | Returns | Auth |

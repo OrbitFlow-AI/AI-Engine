@@ -1,6 +1,4 @@
-# Security guidelines for AI-Engine treasury and payment router deployment.
 # AI Agent Treasury & Micropayment Router — Security Guidelines
-
 ## Access Control
 
 - **Admin-only operations**: treasury deposit/withdraw, budget allocation, router pause, vendor allowlist
