@@ -51,32 +51,43 @@ Without this infrastructure, agent systems either pre-pay vendors off-chain (los
 - **Regulatory compliance automation** — KYC/AML hooks are out of scope; operators handle compliance.
 - **Real-time price oracles** — path payments use Stellar DEX liquidity; custom oracle integration is future work.
 
-## 2. Target Users
+## 4. Core Features
 
-| Persona | Needs | Success Signal |
-|---------|-------|----------------|
-| **Agent Platform Engineer** | SDK to allocate budgets and trigger payments from agent runtime | Integrates treasury in <1 day without Soroban expertise |
-| **Treasury / Ops Admin** | Policy controls, audit trail, budget caps | Can revoke agent spend and inspect ledger in dashboard or CLI |
-| **Vendor / Service Provider** | Reliable stablecoin settlement for API usage | Receives path-routed USDC payments with clear memo/reference |
-| **Smart Wallet Integrator** | Smart Account Kit hooks for passkey auth | Agents sign via delegated session keys within policy bounds |
+| Feature | Description | Acceptance Criterion |
+|---------|-------------|---------------------|
+| **Treasury Contract** | On-chain stablecoin vault with admin controls | Admin can deposit/withdraw; balance queryable; emits deposit events |
+| **Agent Budget Allocation** | Assign spending limits per agent address | Admin allocates budget; agent balance decrements on spend; rejects over-budget |
+| **Payment Router** | Route micropayments to vendor destinations | Agent initiates payment; router validates budget + conditions; settles on-chain |
+| **Condition-Based Path Payments** | Pay only when resource delivery condition met | Router holds escrow; releases on condition proof or timeout refund |
+| **Smart Account Kit Hooks** | Programmatic agent wallet creation and signing | SDK exposes `createAgentWallet()` and `signPayment()` via Smart Account Kit |
+| **Multi-Agent Budget Management** | Cohort budgets, sub-allocation, revocation | Admin can set cohort cap; revoke agent budget; reclaim unspent funds |
+| **TypeScript Agent SDK** | High-level client for agent runtime integration | `TreasuryClient`, `RouterClient`, `BudgetManager` exported from `@ai-engine/sdk` |
+| **Rust Agent SDK** | Native client for Rust-based agent systems | `AgentClient` trait with allocate, pay, balance query methods |
+| **Spending Policies** | Rate limits, allowlists, max single payment | Router rejects payments exceeding per-tx or daily limits |
+| **Observability Stubs** | Logging and metrics hooks for production | SDK emits structured payment events; metrics counters for spend/volume |
+| **CI/CD Pipeline** | Automated contract build, test, deploy skeleton | GitHub Actions runs `cargo test` and SDK typecheck on PR |
+| **Security Patterns** | Role-based access, pause, reentrancy guards | Only admin can allocate; emergency pause halts router; no reentrant spend |
 
-Primary deployment context: multi-agent LLM orchestration frameworks (LangGraph, custom agent fleets) running on server-side infrastructure with programmatic key material.
+## 5. Technical Constraints
 
-## 3. Goals and Non-Goals
+| Constraint | Detail |
+|------------|--------|
+| **Blockchain** | Stellar testnet/mainnet; Soroban smart contracts (Rust `#![no_std]`) |
+| **Token Standard** | Stellar classic assets (USDC) via Soroban token interface |
+| **Wallet Integration** | Stellar Smart Account Kit for passkey-based programmatic signing |
+| **Path Payments** | Stellar DEX path payment strict send/receive for stablecoin routing |
+| **Contract Size** | Soroban WASM size limits; shared types extracted to `contracts/shared` crate |
+| **Agent Runtime** | TypeScript SDK targets Node.js 18+; Rust SDK targets stable toolchain |
+| **Deployment** | Render-compatible CI/CD skeleton; ephemeral filesystem (no local state) |
+| **No Dependency Install** | Scaffold phase writes code/config only; CI validates on push |
 
-### Goals
+## 6. Open Questions
 
-- Provide Soroban smart contracts for agent treasury allocation and micropayment routing
-- Expose TypeScript and Rust SDKs for agent runtimes to request spend within policy
-- Support condition-based path payments (destination asset, max slippage, min received)
-- Integrate with Stellar Smart Account Kit for passkey-based programmatic wallets
-- Enable multi-agent budget pools with per-agent sub-allocations and spend tracking
-- Ship observable, testable scaffold suitable for testnet deployment
-
-### Non-Goals
-
-- Building a full LLM orchestration framework (integrate with existing agent systems)
-- Fiat on/off-ramp or KYC/compliance tooling in v1
-- Custodial key storage; agents must use Smart Account Kit or bring-your-own signer
-- Mainnet production deployment and formal audit in initial scaffold phases
-- Real-time off-chain price oracles beyond Stellar path payment mechanics
+| ID | Question | Impact | Proposed Default |
+|----|----------|--------|------------------|
+| OQ1 | Which stablecoin(s) to support at launch? | Token contract addresses | USDC on Stellar testnet |
+| OQ2 | How are delivery conditions verified on-chain? | Path payment escrow release | Off-chain oracle attestation via admin/multisig in v1 |
+| OQ3 | Smart Account Kit session key TTL? | Agent autonomy vs. security | 24h delegated session keys with spend cap |
+| OQ4 | Cohort budget nesting depth? | Contract storage complexity | Flat: treasury → agent (no nested cohorts in v1) |
+| OQ5 | Minimum micropayment amount? | Soroban fee economics | 0.01 USDC floor to cover network fees |
+| OQ6 | Formal audit timeline? | Mainnet readiness | Post-scaffold; testnet only until audit complete |
