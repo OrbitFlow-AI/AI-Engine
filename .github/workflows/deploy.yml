@@ -1,0 +1,57 @@
+# GitHub Actions deploy pipeline — build WASM artifacts and deploy to testnet.
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Target network'
+        required: true
+        default: 'testnet'
+        type: choice
+        options:
+          - testnet
+          - futurenet
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-contracts:
+    name: Build WASM Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Build release WASM
+        run: |
+          cargo build --target wasm32-unknown-unknown --release -p ai-engine-treasury
+          cargo build --target wasm32-unknown-unknown --release -p ai-engine-payment-router
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: soroban-wasm
+          path: |
+            target/wasm32-unknown-unknown/release/*.wasm
+
+  deploy-testnet:
+    name: Deploy to Testnet
+    needs: build-contracts
+    runs-on: ubuntu-latest
+    if: github.event.inputs.network == 'testnet'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: soroban-wasm
+
+      - name: Deploy contracts (stub)
+        run: echo "Deploy to Soroban testnet — requires SOROBAN_SECRET_KEY secret"
