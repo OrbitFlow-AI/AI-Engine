@@ -1,0 +1,18 @@
+# Render blueprint — optional indexer/API service for payment event ingestion.
+services:
+  - type: web
+    name: ai-engine-indexer
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node packages/sdk/dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: STELLAR_NETWORK
+        value: testnet
+      - key: STELLAR_RPC_URL
+        value: https://soroban-testnet.stellar.org
+      - key: PORT
+        value: "3000"
+    healthCheckPath: /health
