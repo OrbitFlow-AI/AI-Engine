@@ -7,4 +7,7 @@ mod routing;
 mod conditions;
 mod errors;
 
+#[cfg(test)]
+mod test;
+
 pub use contract::PaymentRouterContract;
