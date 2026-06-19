@@ -1,0 +1,21 @@
+# Payment router contract — micropayment routing with condition-based path payments.
+[package]
+name = "ai-engine-payment-router"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+ai-engine-shared = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+ai-engine-shared = { workspace = true, features = ["testutils"] }
+
+[features]
+testutils = ["soroban-sdk/testutils", "ai-engine-shared/testutils"]
