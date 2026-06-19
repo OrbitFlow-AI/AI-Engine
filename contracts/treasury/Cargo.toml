@@ -1,0 +1,21 @@
+# Treasury contract — on-chain stablecoin vault with agent budget allocation.
+[package]
+name = "ai-engine-treasury"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+ai-engine-shared = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+ai-engine-shared = { workspace = true, features = ["testutils"] }
+
+[features]
+testutils = ["soroban-sdk/testutils", "ai-engine-shared/testutils"]
