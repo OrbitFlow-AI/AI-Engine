@@ -1,0 +1,20 @@
+# Soroban contract build configuration for AI-Engine.
+[contract_meta]
+version = "0.1.0"
+name = "ai-engine"
+
+[[contracts]]
+name = "treasury"
+path = "contracts/treasury"
+
+[[contracts]]
+name = "payment-router"
+path = "contracts/payment-router"
+
+[network.testnet]
+rpc_url = "https://soroban-testnet.stellar.org"
+network_passphrase = "Test SDF Network ; September 2015"
+
+[network.futurenet]
+rpc_url = "https://rpc-futurenet.stellar.org"
+network_passphrase = "Test SDF Future Network ; October 2022"
