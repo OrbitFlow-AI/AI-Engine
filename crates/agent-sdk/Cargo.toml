@@ -1,0 +1,12 @@
+# Rust agent SDK — native client for Rust-based agent systems.
+[package]
+name = "ai-engine-agent-sdk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ai-engine-shared = { workspace = true }
+
+[dev-dependencies]
+ai-engine-shared = { workspace = true, features = ["testutils"] }
