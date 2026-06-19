@@ -1,0 +1,110 @@
+// Payment router contract implementation — micropayment routing entry points.
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Vec, i128};
+use ai_engine_shared::{
+    AgentId, ContractError, PaymentCondition, PaymentRequest,
+};
+use crate::{routing, storage};
+
+#[contract]
+pub struct PaymentRouterContract;
+
+#[contractimpl]
+impl PaymentRouterContract {
+    /// Initialize router with admin and treasury contract reference.
+    pub fn initialize(
+        env: Env,
+        admin: Address,
+        treasury: Address,
+        max_single_payment: i128,
+    ) -> Result<(), ContractError> {
+        if storage::is_initialized(&env) {
+            return Err(ContractError::AlreadyInitialized);
+        }
+        admin.require_auth();
+        storage::set_admin(&env, &admin);
+        storage::set_treasury(&env, &treasury);
+        storage::set_max_single_payment(&env, max_single_payment);
+        storage::set_paused(&env, false);
+        Ok(())
+    }
+
+    /// Agent initiates a condition-based micropayment.
+    pub fn initiate_payment(
+        env: Env,
+        agent: Address,
+        vendor: Address,
+        amount: i128,
+        asset: Address,
+        condition: PaymentCondition,
+        reference: BytesN<32>,
+    ) -> Result<u64, ContractError> {
+        let request = PaymentRequest {
+            agent: AgentId(agent.clone()),
+            vendor,
+            amount,
+            asset,
+            condition,
+            reference,
+        };
+        routing::initiate_payment(&env, &agent, &request)
+    }
+
+    /// Settle a pending payment when conditions are met.
+    pub fn settle_payment(
+        env: Env,
+        payment_id: u64,
+        received_amount: i128,
+    ) -> Result<(), ContractError> {
+        let treasury = storage::get_treasury(&env)?;
+        routing::settle_payment(&env, &treasury, payment_id, received_amount)
+    }
+
+    /// Refund a pending payment (admin-only).
+    pub fn refund_payment(
+        env: Env,
+        admin: Address,
+        payment_id: u64,
+        reason: Symbol,
+    ) -> Result<(), ContractError> {
+        routing::refund_payment(&env, &admin, payment_id, reason)
+    }
+
+    /// Set vendor allowlist (admin-only). Empty list allows all vendors.
+    pub fn set_vendor_allowlist(
+        env: Env,
+        admin: Address,
+        vendors: Vec<Address>,
+    ) -> Result<(), ContractError> {
+        storage::require_admin(&env, &admin)?;
+        storage::set_vendor_allowlist(&env, vendors);
+        Ok(())
+    }
+
+    /// Emergency pause (admin-only).
+    pub fn pause(env: Env, admin: Address) -> Result<(), ContractError> {
+        storage::require_admin(&env, &admin)?;
+        storage::set_paused(&env, true);
+        Ok(())
+    }
+
+    /// Unpause router (admin-only).
+    pub fn unpause(env: Env, admin: Address) -> Result<(), ContractError> {
+        storage::require_admin(&env, &admin)?;
+        storage::set_paused(&env, false);
+        Ok(())
+    }
+
+    /// Update max single payment limit (admin-only).
+    pub fn set_max_payment(
+        env: Env,
+        admin: Address,
+        max: i128,
+    ) -> Result<(), ContractError> {
+        storage::require_admin(&env, &admin)?;
+        if max <= 0 {
+            return Err(ContractError::InvalidAmount);
+        }
+        storage::set_max_single_payment(&env, max);
+        Ok(())
+    }
+}
