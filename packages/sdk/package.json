@@ -1,0 +1,31 @@
+{
+  "name": "@ai-engine/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for AI Agent Treasury & Micropayment Router",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/**/*.test.js",
+    "lint": "echo 'lint stub'"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0"
+}
