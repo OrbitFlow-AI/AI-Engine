@@ -1,0 +1,24 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "files": ["README.md", "docs/**/*.md"],
+  "ignorePaths": ["node_modules", "target", "packages/*/dist"],
+  "words": [
+    "FinOps",
+    "Soroban",
+    "Stellar",
+    "Reentrancy",
+    "allowlist",
+    "mainnet",
+    "micropayment",
+    "micropayments",
+    "multisig",
+    "passkey",
+    "passkeys",
+    "rustfmt",
+    "stablecoins",
+    "stroops",
+    "testnet",
+    "trustlines"
+  ]
+}

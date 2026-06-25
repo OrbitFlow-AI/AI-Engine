@@ -10,7 +10,8 @@
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "spellcheck": "cspell README.md docs/**/*.md"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -19,5 +20,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/OrbitFlow-AI/AI-Engine"
+  },
+  "devDependencies": {
+    "cspell": "^8.19.4"
   }
 }
