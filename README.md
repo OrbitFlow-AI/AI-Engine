@@ -49,6 +49,7 @@ cd packages/sdk && npm install && npm run build
 
 - [Product Requirements](./docs/PRD.md)
 - [Roadmap](./docs/ROADMAP.md)
+- [Wave Contributor Onboarding](./docs/CONTRIBUTING-WAVE.md)
 - [Security Guidelines](./docs/SECURITY.md)
 - [Deployment Guide](./docs/DEPLOYMENT.md)
 
