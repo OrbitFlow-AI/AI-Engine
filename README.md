@@ -48,6 +48,7 @@ cd packages/sdk && npm install && npm run build
 ## Documentation
 
 - [Product Requirements](./docs/PRD.md)
+- [API Reference](./docs/API.md)
 - [Roadmap](./docs/ROADMAP.md)
 - [Security Guidelines](./docs/SECURITY.md)
 - [Deployment Guide](./docs/DEPLOYMENT.md)
