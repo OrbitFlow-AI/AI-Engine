@@ -18,6 +18,24 @@
 - **Reentrancy guards** on spend recording paths
 - **Budget expiry** prevents stale allocations from being spent
 - **Vendor allowlist** optional for enterprise deployments
+- **Spend policy rate limiting**: sliding-window cap on payments per agent per time window, in
+  addition to the existing max-single-payment and daily-limit checks
+- **Allocation policy bounds**: treasury enforces a daily allocation cap and per-agent min/max
+  bounds so a single admin action cannot drain the treasury in one call
+
+## Governance
+
+- Both treasury and router support an optional **multisig governance** mode: `init_governance`
+  configures a signer set and approval threshold; `propose_action` / `approve_proposal` /
+  `execute_proposal` gate admin-equivalent actions (`ChangeAdmin`, `SetPause`, `AddSigner`,
+  `RemoveSigner`, `SetThreshold`) behind N-of-M approval
+- Proposals carry an optional TTL (`expires_at`); expired or already-executed/cancelled proposals
+  cannot be approved or executed
+- Removing a signer or lowering the threshold is itself validated against
+  `InvalidThreshold` so governance cannot be configured into a state that requires more
+  approvals than there are signers
+- Until `init_governance` is called, the single admin key remains the sole authority — governance
+  is additive and does not remove the existing admin-only access control paths
 
 ## Operational Security
 
@@ -32,5 +50,7 @@
 | Agent overspend | Per-agent budget + daily limits + max single payment |
 | Compromised session key | TTL rotation + spend cap via Smart Account Kit |
 | Malicious vendor | Optional vendor allowlist |
-| Admin key compromise | Multisig admin (future); pause + revoke |
+| Admin key compromise | Optional multisig governance (N-of-M proposal approval); pause + revoke |
+| Runaway budget allocation | Allocation policy: daily cap + per-agent min/max bounds |
+| Payment flooding / spam | Router spend policy: sliding-window rate limit per agent |
 | Router exploit | Pause router; treasury holds funds until spend recorded |
