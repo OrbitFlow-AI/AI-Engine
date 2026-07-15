@@ -26,6 +26,7 @@ pub enum PaymentStatus {
     Failed,
 }
 
+#[derive(Clone)]
 pub struct SpendPolicy {
     pub max_single_payment: i128,
     pub daily_limit: i128,
