@@ -61,3 +61,29 @@ pub struct PathPaymentEvent {
     pub condition: PaymentCondition,
     pub path_length: u32,
 }
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SpendPolicyUpdatedEvent {
+    pub updated_by: Address,
+    pub max_single_payment: i128,
+    pub daily_limit: i128,
+    pub rate_limit_max_payments: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RateLimitExceededEvent {
+    pub agent: AgentId,
+    pub window_seconds: u64,
+    pub max_payments: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AllocationPolicyUpdatedEvent {
+    pub updated_by: Address,
+    pub daily_allocation_cap: i128,
+    pub min_allocation: i128,
+    pub max_allocation: i128,
+}
