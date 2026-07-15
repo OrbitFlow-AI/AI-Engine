@@ -1,6 +1,8 @@
 // Treasury contract persistent storage keys and accessors.
-use soroban_sdk::{contracttype, Address, Env, Map, Symbol};
-use ai_engine_shared::{AgentId, AllocationPolicy, BudgetAllocation, CohortBudget, ContractError};
+use soroban_sdk::{contracttype, Address, Env, Map, Symbol, Vec};
+use ai_engine_shared::{
+    AgentId, AllocationPolicy, BudgetAllocation, CohortBudget, ContractError, GovernanceProposal,
+};
 
 const ADMIN: Symbol = Symbol::short("ADMIN");
 const TOKEN: Symbol = Symbol::short("TOKEN");
@@ -20,6 +22,10 @@ pub enum DataKey {
     Cohort(Symbol),
     AllocationPolicy,
     DailyAllocated(u64),
+    Signers,
+    Threshold,
+    Proposal(u64),
+    ProposalCounter,
 }
 
 pub fn is_initialized(env: &Env) -> bool {
@@ -117,6 +123,41 @@ pub fn set_daily_allocated(env: &Env, day: u64, amount: i128) {
     env.storage()
         .persistent()
         .set(&DataKey::DailyAllocated(day), &amount);
+}
+
+pub fn get_signers(env: &Env) -> Vec<Address> {
+    env.storage()
+        .instance()
+        .get(&DataKey::Signers)
+        .unwrap_or(Vec::new(env))
+}
+
+pub fn set_signers(env: &Env, signers: &Vec<Address>) {
+    env.storage().instance().set(&DataKey::Signers, signers);
+}
+
+pub fn get_threshold(env: &Env) -> u32 {
+    env.storage().instance().get(&DataKey::Threshold).unwrap_or(1)
+}
+
+pub fn set_threshold(env: &Env, threshold: u32) {
+    env.storage().instance().set(&DataKey::Threshold, &threshold);
+}
+
+pub fn get_proposal(env: &Env, id: u64) -> Option<GovernanceProposal> {
+    env.storage().persistent().get(&DataKey::Proposal(id))
+}
+
+pub fn set_proposal(env: &Env, proposal: &GovernanceProposal) {
+    env.storage()
+        .persistent()
+        .set(&DataKey::Proposal(proposal.id), proposal);
+}
+
+pub fn next_proposal_id(env: &Env) -> u64 {
+    let counter: u64 = env.storage().instance().get(&DataKey::ProposalCounter).unwrap_or(0);
+    env.storage().instance().set(&DataKey::ProposalCounter, &(counter + 1));
+    counter
 }
 
 pub fn require_admin(env: &Env, caller: &Address) -> Result<(), ContractError> {
