@@ -2,6 +2,7 @@
 import type { AgentConfig, BudgetAllocation, SpendPolicy } from './types.js';
 import { TreasuryClient } from './treasury-client.js';
 import { Logger } from './observability/logger.js';
+import { PolicyManager } from './policy-manager.js';
 
 export interface CohortBudget {
   cohortId: string;
@@ -16,6 +17,7 @@ export class BudgetManager {
   private readonly allocations: Map<string, BudgetAllocation> = new Map();
   private readonly cohorts: Map<string, CohortBudget> = new Map();
   private readonly policy: SpendPolicy;
+  private readonly policyManager: PolicyManager;
 
   constructor(
     config: AgentConfig,
@@ -25,6 +27,20 @@ export class BudgetManager {
     this.treasury = new TreasuryClient(config, logger);
     this.logger = logger ?? new Logger('BudgetManager');
     this.policy = policy;
+    this.policyManager = new PolicyManager(config, policy, this.logger);
+  }
+
+  /**
+   * Check whether an agent may spend now — validates vendor allowlist, single-payment cap,
+   * and the client-side rate-limit window, recording the attempt if allowed.
+   */
+  canAgentSpend(agentAddress: string, vendor: string, amount: bigint): boolean {
+    const validation = this.policyManager.validate(vendor, amount);
+    if (!validation.ok) {
+      this.logger.warn('Spend rejected by policy', { agentAddress, vendor, reason: validation.reason });
+      return false;
+    }
+    return this.policyManager.checkAndRecordRateLimit(agentAddress);
   }
 
   /** Create a cohort budget pool with a total spending cap. */
