@@ -1,0 +1,28 @@
+{
+  "name": "@ai-engine/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for the AI-Engine treasury, router, and governance contracts",
+  "type": "module",
+  "bin": {
+    "ai-engine": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/**/*.test.js",
+    "lint": "echo 'lint stub'"
+  },
+  "dependencies": {
+    "@ai-engine/sdk": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0"
+}
