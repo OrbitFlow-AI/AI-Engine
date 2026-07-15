@@ -1,5 +1,5 @@
 // Shared domain types for treasury and payment router contracts.
-use soroban_sdk::{contracttype, Address, BytesN, String, Symbol, i128, u64};
+use soroban_sdk::{contracttype, Address, BytesN, String, Symbol, Vec, i128, u64};
 
 /// Unique identifier for an agent smart account.
 #[contracttype]
@@ -105,4 +105,37 @@ pub struct AllocationPolicy {
     pub daily_allocation_cap: i128,
     pub min_allocation: i128,
     pub max_allocation: i128,
+}
+
+/// Lifecycle status of a governance proposal.
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ProposalStatus {
+    Pending,
+    Executed,
+    Cancelled,
+}
+
+/// The action a governance proposal will perform once it reaches threshold approvals.
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ProposalAction {
+    ChangeAdmin(Address),
+    SetPause(bool),
+    AddSigner(Address),
+    RemoveSigner(Address),
+    SetThreshold(u32),
+}
+
+/// A pending multisig governance proposal.
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct GovernanceProposal {
+    pub id: u64,
+    pub proposer: Address,
+    pub action: ProposalAction,
+    pub approvals: Vec<Address>,
+    pub status: ProposalStatus,
+    pub created_at: u64,
+    pub expires_at: u64,
 }
