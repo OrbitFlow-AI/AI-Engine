@@ -7,6 +7,7 @@ mod routing;
 mod conditions;
 mod errors;
 mod policy;
+mod governance;
 
 #[cfg(test)]
 mod test;
