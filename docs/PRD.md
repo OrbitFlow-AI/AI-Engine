@@ -67,6 +67,11 @@ Without this infrastructure, agent systems either pre-pay vendors off-chain (los
 | **SDK (Rust)** | Native agent or contract-side helpers | Mirrors TS API; compiles in workspace without network fetch |
 | **Observability Stubs** | Metrics/logging interfaces for operators | SDK emits structured log events; metrics counters defined |
 | **CI/CD Skeleton** | Build, lint, test pipelines | GitHub Actions runs contract build and SDK typecheck on PR |
+| **Multisig Governance** | N-of-M proposal approval for admin actions on treasury and router | Action executes only after threshold approvals; non-signers rejected |
+| **Allocation Policy** | Daily allocation cap and per-agent min/max bounds on the treasury | Allocation rejected if it violates bounds or exceeds the rolling daily cap |
+| **CLI** | Command-line wrapper over the TypeScript SDK | `ai-engine treasury\|router\|governance <subcommand>` covers the full core loop |
+| **Retry & Batch Payments** | Exponential-backoff retry and sequential batch submission in both SDKs | Transient RPC failures retried; batch returns per-request results without aborting |
+| **Webhook Notifications** | Operator-configured webhook delivery for audit events | Delivery retried with backoff; failures logged after retries exhausted |
 
 ## 5. Technical Constraints
 
