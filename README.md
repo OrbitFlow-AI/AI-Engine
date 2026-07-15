@@ -59,6 +59,7 @@ npx ai-engine treasury budget <agent>
 ## Documentation
 
 - [Product Requirements](./docs/PRD.md)
+- [API Reference](./docs/API.md)
 - [Roadmap](./docs/ROADMAP.md)
 - [Wave Contributor Onboarding](./docs/CONTRIBUTING-WAVE.md)
 - [Security Guidelines](./docs/SECURITY.md)
