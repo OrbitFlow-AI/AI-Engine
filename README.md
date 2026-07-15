@@ -10,17 +10,24 @@ AI-Engine enables AI agent platforms to:
 - Allocate **per-agent budgets** with spending isolation
 - Route **micropayments** via condition-based path payments
 - Integrate with **Stellar Smart Account Kit** for passkey-based programmatic wallets
+- Enforce **spend policies** — max single payment, daily limit, and per-agent sliding-window rate
+  limits — on every payment
+- Bound treasury allocations with a **daily allocation cap** and per-agent min/max policy
+- Gate admin actions behind optional **N-of-M multisig governance** on both the treasury and
+  payment-router contracts
+- Drive the full core loop from the command line via **`@ai-engine/cli`**
 
 ## Monorepo Structure
 
 ```
 AI-Engine/
 ├── contracts/
-│   ├── shared/          # Shared types, events, errors
-│   ├── treasury/        # Treasury & budget allocation contract
-│   └── payment-router/  # Micropayment routing & path payments
+│   ├── shared/          # Shared types, events, errors, governance helpers
+│   ├── treasury/        # Treasury, budget allocation, allocation policy, and governance
+│   └── payment-router/  # Micropayment routing, spend policy, and governance
 ├── packages/
-│   └── sdk/             # TypeScript SDK for agent systems
+│   ├── sdk/             # TypeScript SDK for agent systems
+│   └── cli/             # Command-line interface wrapping the TypeScript SDK
 ├── crates/
 │   └── agent-sdk/       # Rust SDK for agent systems
 ├── docs/                # PRD, ROADMAP, guides
@@ -46,12 +53,17 @@ cd packages/sdk && npm install && npm run build
 
 # Check documentation spelling
 npm run spellcheck
+# CLI
+cd packages/cli && npm install && npm run build
+npx ai-engine treasury budget <agent>
 ```
 
 ## Documentation
 
 - [Product Requirements](./docs/PRD.md)
+- [API Reference](./docs/API.md)
 - [Roadmap](./docs/ROADMAP.md)
+- [Wave Contributor Onboarding](./docs/CONTRIBUTING-WAVE.md)
 - [Security Guidelines](./docs/SECURITY.md)
 - [Deployment Guide](./docs/DEPLOYMENT.md)
 

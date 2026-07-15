@@ -38,6 +38,15 @@ Derived from [PRD.md](./PRD.md). Phases are sequential; exit criteria must pass 
 | **Exit Criteria** | CI runs build+test jobs; deployment pipeline documented; security checklist in docs |
 | **Complexity** | Medium |
 
+## Phase 4: Governance & Tooling
+
+| Field | Detail |
+|-------|--------|
+| **Objective** | Optional multisig governance for admin actions, tighter spend/allocation policy enforcement, and operator tooling |
+| **Deliverables** | N-of-M governance module (treasury + router), sliding-window rate limits, treasury allocation policy, `@ai-engine/cli`, retry/backoff and batch payments in both SDKs, webhook audit-event delivery |
+| **Exit Criteria** | Governance propose/approve/execute covered by unit + integration tests; CLI covers treasury/router/governance core loop; SDK typecheck and contract unit tests pass |
+| **Complexity** | Medium |
+
 ## Summary Timeline
 
 | Phase | Focus | Complexity | Depends On |
@@ -46,5 +55,6 @@ Derived from [PRD.md](./PRD.md). Phases are sequential; exit criteria must pass 
 | 1 | Core Loop | Medium | Phase 0 |
 | 2 | Feature Complete | High | Phase 1 |
 | 3 | Production Hardening | Medium | Phase 2 |
+| 4 | Governance & Tooling | Medium | Phase 3 |
 
-**Estimated sequence:** Phase 0 → 1 → 2 → 3. Parallel work possible on SDK vs contracts within each phase after interfaces are defined.
+**Estimated sequence:** Phase 0 → 1 → 2 → 3 → 4. Parallel work possible on SDK vs contracts within each phase after interfaces are defined.

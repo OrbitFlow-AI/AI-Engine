@@ -1,5 +1,5 @@
 // Treasury client — deposit, allocate, and query agent budgets on-chain.
-import type { AgentConfig, BudgetAllocation } from './types.js';
+import type { AgentConfig, AllocationPolicy, BudgetAllocation } from './types.js';
 import { Logger } from './observability/logger.js';
 import { MetricsCollector } from './observability/metrics.js';
 
@@ -64,5 +64,24 @@ export class TreasuryClient {
   /** Get total treasury balance. */
   async totalBalance(): Promise<bigint> {
     return 0n;
+  }
+
+  /** Set the allocation policy — daily cap and per-agent bounds (admin operation). */
+  async setAllocationPolicy(adminSigner: string, allocationPolicy: AllocationPolicy): Promise<void> {
+    this.logger.info('Setting allocation policy', {
+      dailyAllocationCap: allocationPolicy.dailyAllocationCap.toString(),
+      minAllocation: allocationPolicy.minAllocation.toString(),
+      maxAllocation: allocationPolicy.maxAllocation.toString(),
+    });
+    this.metrics.increment('treasury.allocation_policy_updates');
+  }
+
+  /** Read the current allocation policy. */
+  async getAllocationPolicy(): Promise<AllocationPolicy> {
+    return {
+      dailyAllocationCap: 0n,
+      minAllocation: 0n,
+      maxAllocation: 0n,
+    };
   }
 }

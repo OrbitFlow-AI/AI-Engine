@@ -4,7 +4,7 @@ use ai_engine_shared::{
     AgentId, ContractError, PathPaymentEvent, PaymentInitiatedEvent,
     PaymentRefundedEvent, PaymentRequest, PaymentSettledEvent,
 };
-use crate::{conditions, storage};
+use crate::{conditions, policy, storage};
 
 const DEFAULT_DAILY_LIMIT: i128 = 10_000_000; // 1 USDC in stroops (7 decimals)
 
@@ -35,6 +35,8 @@ pub fn initiate_payment(
     if daily_spent + request.amount > DEFAULT_DAILY_LIMIT {
         return Err(ContractError::PaymentExceedsLimit);
     }
+
+    policy::check_and_record(env, &request.agent)?;
 
     let payment_id = storage::next_payment_id(env);
     storage::store_pending(env, payment_id, request);

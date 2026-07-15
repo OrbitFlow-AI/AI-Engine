@@ -9,6 +9,7 @@ import {
   ConditionBuilder,
   Logger,
   MetricsCollector,
+  PolicyManager,
 } from '@ai-engine/sdk';
 import type { AgentConfig, SmartAccountConfig, SpendPolicy } from '@ai-engine/sdk';
 
@@ -92,5 +93,19 @@ describe('AI-Engine Core Loop', () => {
     metrics.add('router.payment_volume', 10_000n);
     assert.equal(metrics.getCounter('router.payments_initiated'), 1);
     assert.ok(metrics.toPrometheus().includes('router.payments_initiated'));
+  });
+
+  it('enforces spend policy via PolicyManager before initiating a payment', () => {
+    const policy: SpendPolicy = {
+      ...spendPolicy,
+      vendorAllowlist: ['VENDOR_ADDRESS'],
+      rateLimitWindowSeconds: 60,
+      rateLimitMaxPayments: 2,
+    };
+    const policyManager = new PolicyManager(testConfig, policy);
+
+    assert.equal(policyManager.validate('VENDOR_ADDRESS', 10_000n).ok, true);
+    assert.equal(policyManager.validate('UNKNOWN_VENDOR', 10_000n).ok, false);
+    assert.equal(policyManager.validate('VENDOR_ADDRESS', 200_000n).ok, false);
   });
 });

@@ -1,5 +1,8 @@
 // Shared types for the Rust agent SDK.
-use ai_engine_shared::{AgentId, BudgetAllocation, PaymentCondition, PaymentRequest};
+use ai_engine_shared::{
+    AgentId, AllocationPolicy, BudgetAllocation, GovernanceProposal, PaymentCondition,
+    PaymentRequest, ProposalAction,
+};
 
 pub struct AgentConfig {
     pub agent_id: String,
@@ -23,12 +26,18 @@ pub enum PaymentStatus {
     Failed,
 }
 
+#[derive(Clone)]
 pub struct SpendPolicy {
     pub max_single_payment: i128,
     pub daily_limit: i128,
+    pub rate_limit_window_seconds: u64,
+    pub rate_limit_max_payments: u32,
 }
 
 pub type SharedBudgetAllocation = BudgetAllocation;
 pub type SharedPaymentCondition = PaymentCondition;
 pub type SharedPaymentRequest = PaymentRequest;
 pub type SharedAgentId = AgentId;
+pub type SharedAllocationPolicy = AllocationPolicy;
+pub type SharedGovernanceProposal = GovernanceProposal;
+pub type SharedProposalAction = ProposalAction;

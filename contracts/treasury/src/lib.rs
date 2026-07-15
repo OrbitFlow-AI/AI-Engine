@@ -5,6 +5,8 @@ mod contract;
 mod storage;
 mod allocation;
 mod errors;
+mod policy;
+mod governance;
 
 #[cfg(test)]
 mod test;

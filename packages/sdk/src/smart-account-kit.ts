@@ -10,6 +10,7 @@ export interface TransactionPayload {
   contractId: string;
   method: string;
   args: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export class SmartAccountKitAdapter {
