@@ -13,7 +13,9 @@ cargo test -p ai-engine-agent-sdk
 ## Test Categories
 
 - **Unit tests**: allocation logic, condition validation, policy enforcement
-- **Integration tests**: TypeScript E2E in `tests/integration/`
+- **Governance tests**: multisig propose/approve/execute, threshold enforcement, non-signer rejection
+- **Integration tests**: TypeScript E2E in `tests/integration/` — core loop, spend-policy rate limiting
+  (`policy.test.ts`), and multisig governance lifecycle (`governance.test.ts`)
 - **Security tests**: pause, unauthorized access, over-budget (future)
 
 ## Adding Tests
