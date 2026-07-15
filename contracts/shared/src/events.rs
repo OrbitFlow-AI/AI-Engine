@@ -1,6 +1,6 @@
 // Contract event definitions for treasury and router audit trail.
 use soroban_sdk::{contracttype, Address, BytesN, String, Symbol, i128};
-use crate::types::{AgentId, PaymentCondition};
+use crate::types::{AgentId, PaymentCondition, ProposalAction};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -86,4 +86,34 @@ pub struct AllocationPolicyUpdatedEvent {
     pub daily_allocation_cap: i128,
     pub min_allocation: i128,
     pub max_allocation: i128,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProposalCreatedEvent {
+    pub proposal_id: u64,
+    pub proposer: Address,
+    pub action: ProposalAction,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProposalApprovedEvent {
+    pub proposal_id: u64,
+    pub approver: Address,
+    pub approval_count: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProposalExecutedEvent {
+    pub proposal_id: u64,
+    pub executed_by: Address,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProposalCancelledEvent {
+    pub proposal_id: u64,
+    pub cancelled_by: Address,
 }
