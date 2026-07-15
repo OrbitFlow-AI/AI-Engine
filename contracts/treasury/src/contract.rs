@@ -1,9 +1,10 @@
 // Treasury contract implementation — deposit, allocate, and balance management.
 use soroban_sdk::{contract, contractimpl, Address, Env, Symbol, i128};
 use ai_engine_shared::{
-    AgentId, DepositEvent, BudgetAllocation, ContractError,
+    AgentId, AllocationPolicy, AllocationPolicyUpdatedEvent, DepositEvent, BudgetAllocation,
+    ContractError,
 };
-use crate::{allocation, storage};
+use crate::{allocation, policy, storage};
 
 #[contract]
 pub struct TreasuryContract;
@@ -111,5 +112,32 @@ impl TreasuryContract {
         storage::require_admin(&env, &admin)?;
         storage::set_paused(&env, false);
         Ok(())
+    }
+
+    /// Set the allocation policy — daily allocation cap and per-agent bounds (admin-only).
+    pub fn set_allocation_policy(
+        env: Env,
+        admin: Address,
+        allocation_policy: AllocationPolicy,
+    ) -> Result<(), ContractError> {
+        storage::require_admin(&env, &admin)?;
+        policy::validate_policy(&allocation_policy)?;
+        storage::set_allocation_policy(&env, &allocation_policy);
+
+        env.events().publish(
+            (Symbol::new(&env, "allocation_policy_updated"), admin.clone()),
+            AllocationPolicyUpdatedEvent {
+                updated_by: admin,
+                daily_allocation_cap: allocation_policy.daily_allocation_cap,
+                min_allocation: allocation_policy.min_allocation,
+                max_allocation: allocation_policy.max_allocation,
+            },
+        );
+        Ok(())
+    }
+
+    /// Read the current allocation policy.
+    pub fn get_allocation_policy(env: Env) -> AllocationPolicy {
+        storage::get_allocation_policy(&env)
     }
 }
