@@ -1,6 +1,6 @@
 // Payment router persistent storage and policy accessors.
 use soroban_sdk::{contracttype, Address, Env, Map, Symbol, Vec};
-use ai_engine_shared::{AgentId, ContractError, PaymentRequest};
+use ai_engine_shared::{AgentId, ContractError, PaymentRequest, RateLimitWindow, SpendPolicy};
 
 #[contracttype]
 #[derive(Clone)]
@@ -13,7 +13,12 @@ pub enum DataKey {
     VendorAllowlist,
     PendingPayment(u64),
     PaymentCounter,
+    SpendPolicy,
+    RateLimit(AgentId),
 }
+
+const DEFAULT_RATE_LIMIT_WINDOW_SECONDS: u64 = 60;
+const DEFAULT_RATE_LIMIT_MAX_PAYMENTS: u32 = 20;
 
 pub fn is_initialized(env: &Env) -> bool {
     env.storage().instance().has(&DataKey::Admin)
@@ -124,6 +129,28 @@ pub fn require_not_paused(env: &Env) -> Result<(), ContractError> {
     } else {
         Ok(())
     }
+}
+
+pub fn get_spend_policy(env: &Env) -> SpendPolicy {
+    env.storage().instance().get(&DataKey::SpendPolicy).unwrap_or(SpendPolicy {
+        max_single_payment: get_max_single_payment(env),
+        daily_limit: i128::MAX,
+        rate_limit_window_seconds: DEFAULT_RATE_LIMIT_WINDOW_SECONDS,
+        rate_limit_max_payments: DEFAULT_RATE_LIMIT_MAX_PAYMENTS,
+    })
+}
+
+pub fn set_spend_policy(env: &Env, policy: &SpendPolicy) {
+    env.storage().instance().set(&DataKey::SpendPolicy, policy);
+    env.storage().instance().set(&DataKey::MaxSinglePayment, &policy.max_single_payment);
+}
+
+pub fn get_rate_limit(env: &Env, agent: &AgentId) -> Option<RateLimitWindow> {
+    env.storage().persistent().get(&DataKey::RateLimit(agent.clone()))
+}
+
+pub fn set_rate_limit(env: &Env, agent: &AgentId, window: &RateLimitWindow) {
+    env.storage().persistent().set(&DataKey::RateLimit(agent.clone()), window);
 }
 
 pub fn require_admin(env: &Env, caller: &Address) -> Result<(), ContractError> {
