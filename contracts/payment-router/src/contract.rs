@@ -1,9 +1,10 @@
 // Payment router contract implementation — micropayment routing entry points.
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol, Vec, i128};
 use ai_engine_shared::{
-    AgentId, ContractError, PaymentCondition, PaymentRequest,
+    AgentId, ContractError, PaymentCondition, PaymentRequest, SpendPolicy,
+    SpendPolicyUpdatedEvent,
 };
-use crate::{routing, storage};
+use crate::{policy, routing, storage};
 
 #[contract]
 pub struct PaymentRouterContract;
@@ -106,5 +107,32 @@ impl PaymentRouterContract {
         }
         storage::set_max_single_payment(&env, max);
         Ok(())
+    }
+
+    /// Set the full spend policy — max single payment, daily limit, and rate limit (admin-only).
+    pub fn set_spend_policy(
+        env: Env,
+        admin: Address,
+        spend_policy: SpendPolicy,
+    ) -> Result<(), ContractError> {
+        storage::require_admin(&env, &admin)?;
+        policy::validate_policy(&spend_policy)?;
+        storage::set_spend_policy(&env, &spend_policy);
+
+        env.events().publish(
+            (Symbol::new(&env, "policy_updated"), admin.clone()),
+            SpendPolicyUpdatedEvent {
+                updated_by: admin,
+                max_single_payment: spend_policy.max_single_payment,
+                daily_limit: spend_policy.daily_limit,
+                rate_limit_max_payments: spend_policy.rate_limit_max_payments,
+            },
+        );
+        Ok(())
+    }
+
+    /// Read the current spend policy.
+    pub fn get_spend_policy(env: Env) -> SpendPolicy {
+        storage::get_spend_policy(&env)
     }
 }
