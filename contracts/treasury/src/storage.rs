@@ -1,6 +1,6 @@
 // Treasury contract persistent storage keys and accessors.
 use soroban_sdk::{contracttype, Address, Env, Map, Symbol};
-use ai_engine_shared::{AgentId, BudgetAllocation, CohortBudget, ContractError};
+use ai_engine_shared::{AgentId, AllocationPolicy, BudgetAllocation, CohortBudget, ContractError};
 
 const ADMIN: Symbol = Symbol::short("ADMIN");
 const TOKEN: Symbol = Symbol::short("TOKEN");
@@ -18,6 +18,8 @@ pub enum DataKey {
     TotalBalance,
     Allocation(AgentId),
     Cohort(Symbol),
+    AllocationPolicy,
+    DailyAllocated(u64),
 }
 
 pub fn is_initialized(env: &Env) -> bool {
@@ -90,6 +92,31 @@ pub fn set_cohort(env: &Env, cohort: &CohortBudget) {
     env.storage()
         .persistent()
         .set(&DataKey::Cohort(cohort.cohort_id.clone()), cohort);
+}
+
+pub fn get_allocation_policy(env: &Env) -> AllocationPolicy {
+    env.storage().instance().get(&DataKey::AllocationPolicy).unwrap_or(AllocationPolicy {
+        daily_allocation_cap: i128::MAX,
+        min_allocation: 1,
+        max_allocation: i128::MAX,
+    })
+}
+
+pub fn set_allocation_policy(env: &Env, policy: &AllocationPolicy) {
+    env.storage().instance().set(&DataKey::AllocationPolicy, policy);
+}
+
+pub fn get_daily_allocated(env: &Env, day: u64) -> i128 {
+    env.storage()
+        .persistent()
+        .get(&DataKey::DailyAllocated(day))
+        .unwrap_or(0)
+}
+
+pub fn set_daily_allocated(env: &Env, day: u64, amount: i128) {
+    env.storage()
+        .persistent()
+        .set(&DataKey::DailyAllocated(day), &amount);
 }
 
 pub fn require_admin(env: &Env, caller: &Address) -> Result<(), ContractError> {
