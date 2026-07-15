@@ -3,7 +3,7 @@ use soroban_sdk::{Address, Env, Symbol};
 use ai_engine_shared::{
     AgentId, AllocationEvent, BudgetAllocation, ContractError,
 };
-use crate::storage;
+use crate::{policy, storage};
 
 pub fn allocate_budget(
     env: &Env,
@@ -18,6 +18,9 @@ pub fn allocate_budget(
     if amount <= 0 {
         return Err(ContractError::InvalidAmount);
     }
+
+    policy::validate_amount(env, amount)?;
+    policy::check_and_record_daily_cap(env, amount)?;
 
     let total = storage::get_total_balance(env);
     let existing = storage::get_allocation(env, agent);
