@@ -47,6 +47,33 @@ export interface SpendPolicy {
   maxSinglePayment: bigint;
   dailyLimit: bigint;
   vendorAllowlist?: string[];
+  rateLimitWindowSeconds?: number;
+  rateLimitMaxPayments?: number;
+}
+
+export interface AllocationPolicy {
+  dailyAllocationCap: bigint;
+  minAllocation: bigint;
+  maxAllocation: bigint;
+}
+
+export type ProposalStatus = 'pending' | 'executed' | 'cancelled';
+
+export type ProposalAction =
+  | { type: 'change_admin'; newAdmin: string }
+  | { type: 'set_pause'; paused: boolean }
+  | { type: 'add_signer'; signer: string }
+  | { type: 'remove_signer'; signer: string }
+  | { type: 'set_threshold'; threshold: number };
+
+export interface GovernanceProposal {
+  id: bigint;
+  proposer: string;
+  action: ProposalAction;
+  approvals: string[];
+  status: ProposalStatus;
+  createdAt: number;
+  expiresAt: number;
 }
 
 export interface PaymentEvent {
