@@ -1,5 +1,7 @@
 // AgentClient trait — allocate, pay, and query budget lifecycle.
+use std::time::{SystemTime, UNIX_EPOCH};
 use ai_engine_shared::{BudgetAllocation, ContractError, PaymentRequest};
+use crate::policy::RateLimiter;
 use crate::types::{AgentConfig, PaymentResult, PaymentStatus, SpendPolicy};
 
 pub trait AgentClient: Send + Sync {
@@ -34,19 +36,32 @@ pub struct MockAgentClient {
     config: AgentConfig,
     policy: SpendPolicy,
     remaining_budget: i128,
+    rate_limiter: RateLimiter,
 }
 
 impl MockAgentClient {
     pub fn new(config: AgentConfig, policy: SpendPolicy) -> Self {
+        let rate_limiter = RateLimiter::new(policy.clone());
         Self {
             config,
-            policy,
             remaining_budget: policy.daily_limit,
+            policy,
+            rate_limiter,
         }
     }
 
     pub fn set_remaining_budget(&mut self, amount: i128) {
         self.remaining_budget = amount;
+    }
+
+    /// Check whether the agent may send another payment within the configured rate-limit window,
+    /// recording the attempt if allowed. Callers should invoke this before `initiate_payment`.
+    pub fn check_rate_limit(&mut self, agent_address: &str) -> bool {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        self.rate_limiter.check_and_record(agent_address, now)
     }
 }
 
