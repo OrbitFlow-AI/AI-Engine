@@ -134,4 +134,60 @@ mod router_tests {
         );
         assert!(second.is_err());
     }
+
+    #[test]
+    fn test_governance_pause_requires_threshold_approvals() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let treasury = Address::generate(&env);
+        let signer_b = Address::generate(&env);
+
+        let contract_id = env.register(PaymentRouterContract, ());
+        let client = PaymentRouterContractClient::new(&env, &contract_id);
+        client.initialize(&admin, &treasury, &100_000i128);
+
+        let mut signers = soroban_sdk::Vec::new(&env);
+        signers.push_back(admin.clone());
+        signers.push_back(signer_b.clone());
+        client.init_governance(&admin, &signers, &2u32);
+
+        let action = ai_engine_shared::ProposalAction::SetPause(true);
+        let proposal_id = client.propose_action(&admin, &action, &0u64);
+
+        let early = client.try_execute_proposal(&admin, &proposal_id);
+        assert!(early.is_err());
+
+        client.approve_proposal(&signer_b, &proposal_id);
+        client.execute_proposal(&admin, &proposal_id);
+
+        let proposal = client.get_proposal(&proposal_id).unwrap();
+        assert_eq!(proposal.status, ai_engine_shared::ProposalStatus::Executed);
+    }
+
+    #[test]
+    fn test_governance_rejects_double_approval() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let treasury = Address::generate(&env);
+        let signer_b = Address::generate(&env);
+
+        let contract_id = env.register(PaymentRouterContract, ());
+        let client = PaymentRouterContractClient::new(&env, &contract_id);
+        client.initialize(&admin, &treasury, &100_000i128);
+
+        let mut signers = soroban_sdk::Vec::new(&env);
+        signers.push_back(admin.clone());
+        signers.push_back(signer_b.clone());
+        client.init_governance(&admin, &signers, &2u32);
+
+        let action = ai_engine_shared::ProposalAction::SetPause(true);
+        let proposal_id = client.propose_action(&admin, &action, &0u64);
+
+        let result = client.try_approve_proposal(&admin, &proposal_id);
+        assert!(result.is_err());
+    }
 }
