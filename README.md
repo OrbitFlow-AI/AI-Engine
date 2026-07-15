@@ -51,6 +51,8 @@ cargo build --target wasm32-unknown-unknown --release
 # TypeScript SDK
 cd packages/sdk && npm install && npm run build
 
+# Check documentation spelling
+npm run spellcheck
 # CLI
 cd packages/cli && npm install && npm run build
 npx ai-engine treasury budget <agent>
