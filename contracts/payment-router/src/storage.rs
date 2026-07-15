@@ -1,6 +1,8 @@
 // Payment router persistent storage and policy accessors.
 use soroban_sdk::{contracttype, Address, Env, Map, Symbol, Vec};
-use ai_engine_shared::{AgentId, ContractError, PaymentRequest, RateLimitWindow, SpendPolicy};
+use ai_engine_shared::{
+    AgentId, ContractError, GovernanceProposal, PaymentRequest, RateLimitWindow, SpendPolicy,
+};
 
 #[contracttype]
 #[derive(Clone)]
@@ -15,6 +17,10 @@ pub enum DataKey {
     PaymentCounter,
     SpendPolicy,
     RateLimit(AgentId),
+    Signers,
+    Threshold,
+    Proposal(u64),
+    ProposalCounter,
 }
 
 const DEFAULT_RATE_LIMIT_WINDOW_SECONDS: u64 = 60;
@@ -151,6 +157,41 @@ pub fn get_rate_limit(env: &Env, agent: &AgentId) -> Option<RateLimitWindow> {
 
 pub fn set_rate_limit(env: &Env, agent: &AgentId, window: &RateLimitWindow) {
     env.storage().persistent().set(&DataKey::RateLimit(agent.clone()), window);
+}
+
+pub fn get_signers(env: &Env) -> Vec<Address> {
+    env.storage()
+        .instance()
+        .get(&DataKey::Signers)
+        .unwrap_or(Vec::new(env))
+}
+
+pub fn set_signers(env: &Env, signers: &Vec<Address>) {
+    env.storage().instance().set(&DataKey::Signers, signers);
+}
+
+pub fn get_threshold(env: &Env) -> u32 {
+    env.storage().instance().get(&DataKey::Threshold).unwrap_or(1)
+}
+
+pub fn set_threshold(env: &Env, threshold: u32) {
+    env.storage().instance().set(&DataKey::Threshold, &threshold);
+}
+
+pub fn get_proposal(env: &Env, id: u64) -> Option<GovernanceProposal> {
+    env.storage().persistent().get(&DataKey::Proposal(id))
+}
+
+pub fn set_proposal(env: &Env, proposal: &GovernanceProposal) {
+    env.storage()
+        .persistent()
+        .set(&DataKey::Proposal(proposal.id), proposal);
+}
+
+pub fn next_proposal_id(env: &Env) -> u64 {
+    let counter: u64 = env.storage().instance().get(&DataKey::ProposalCounter).unwrap_or(0);
+    env.storage().instance().set(&DataKey::ProposalCounter, &(counter + 1));
+    counter
 }
 
 pub fn require_admin(env: &Env, caller: &Address) -> Result<(), ContractError> {
